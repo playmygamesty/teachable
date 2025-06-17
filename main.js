@@ -33,14 +33,16 @@ form.onsubmit = e => {
   addBubble(msg, 'user');
   input.value = '';
 
-  // Auto‑learn mapping if possible
-  const learned = autoLearn(msg, state);
-  if (learned) addBubble(`👍 Learned: ${learned.emoji} = ${learned.word}`, 'bot');
+  // 🔄 Auto‑learn multiple pairs from this message
+  const learnedPairs = autoLearn(msg, state);
+  learnedPairs.forEach(({ emoji, word }) => {
+    addBubble(`👍 Learned: ${emoji} = ${word}`, 'bot');
+  });
 
-  // Always store sentence for Markov
+  // Store sentence for Markov
   state.corpus.push(msg);
 
-  // Generate reply
+  // Decide reply based on mode
   const reply = state.mode === 'emoji'
     ? replyEmoji(msg, state)
     : generateSentence(buildMarkovTable(state.corpus));
@@ -87,5 +89,4 @@ function renderStats() {
 
 // === Settings dialog & reset ===
 settingsBtn.onclick = () => settingsDialog.showModal();
-
 document.getElementById('resetBtn').onclick = resetState;
