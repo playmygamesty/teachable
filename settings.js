@@ -1,17 +1,17 @@
-export function saveState(state) {
-  localStorage.setItem("emojiBotState", JSON.stringify(state));
-}
-
 export function loadState() {
-  const raw = localStorage.getItem("emojiBotState");
-  return raw ? JSON.parse(raw) : {
-    lexicon: {},
-    corpus: [],
-    mode: "emoji"
-  };
+  try {
+    return JSON.parse(localStorage.getItem("emojiBotState")) || {
+      lexicon: {}, corpus: [], mode: "emoji"
+    };
+  } catch (_) {
+    return { lexicon: {}, corpus: [], mode: "emoji" };
+  }
 }
 
-export function resetState() {
+export const saveState = state =>
+  localStorage.setItem("emojiBotState", JSON.stringify(state));
+
+export const resetState = () => {
   localStorage.removeItem("emojiBotState");
   location.reload();
-}
+};
