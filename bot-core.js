@@ -19,31 +19,35 @@ export function addTeachingPair(emoji, word, state) {
 }
 
 /**
- * Advanced implicit learning:
- * – Collect all unknown emojis in the message
- * – Collect all unknown words (alphabetic tokens length ≥ 3)
- * – Pair them in appearance order (one‑to‑one) and save
- * Returns an array of {emoji, word} actually learned.
+ * Improved implicit learning:
+ * For each unknown emoji in the message,
+ * find the nearest preceding unknown word (≥3 letters),
+ * pair and learn.
+ * Returns array of {emoji, word} learned.
  */
 export function autoLearn(userMsg, state) {
   const learned = [];
 
-  // Ordered lists of emojis and words in the message
-  const emojiMatches = [...userMsg.matchAll(/\p{Emoji_Presentation}/gu)].map(m => m[0]);
-  const wordMatches  = userMsg.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
+  const words = [...userMsg.matchAll(/\b[a-z]{3,}\b/gi)];
+  const emojis = [...userMsg.matchAll(/\p{Emoji_Presentation}/gu)];
 
-  if (!emojiMatches.length || !wordMatches.length) return learned;
+  for (const emojiMatch of emojis) {
+    const emoji = emojiMatch[0];
+    if (state.lexicon[emoji]) continue; // already known
 
-  const unknownEmojis = emojiMatches.filter(e => !state.lexicon[e]);
-  const knownWords = new Set(Object.values(state.lexicon));
-  const unknownWords = wordMatches.filter(w => !knownWords.has(w));
+    // Find nearest word before emoji
+    const emojiIndex = emojiMatch.index;
+    const nearbyWord = [...words]
+      .filter(w => w.index < emojiIndex)
+      .pop();
 
-  const count = Math.min(unknownEmojis.length, unknownWords.length);
-  for (let i = 0; i < count; i++) {
-    const emoji = unknownEmojis[i];
-    const word  = unknownWords[i];
-    state.lexicon[emoji] = word;
-    learned.push({ emoji, word });
+    if (nearbyWord) {
+      const word = nearbyWord[0].toLowerCase();
+      if (!Object.values(state.lexicon).includes(word)) {
+        state.lexicon[emoji] = word;
+        learned.push({ emoji, word });
+      }
+    }
   }
 
   return learned;
