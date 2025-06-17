@@ -8,8 +8,8 @@ export function buildMarkovTable(lines) {
     }
   });
   return table;
+  
 }
-
 export function generateSentence(table, max = 20) {
   let w1 = "⟨START⟩";
   let w2 = random(table["⟨START⟩ ⟨START⟩"] || Object.keys(table)[0]?.split(" ")[1]);
@@ -20,7 +20,8 @@ export function generateSentence(table, max = 20) {
     out.push(next);
     [w1, w2] = [w2, next];
   }
-  return out.join(" ");
+  return out.length > 0 ? out.join(" ") : "🤖";  // fallback if empty
 }
+
 
 function random(arr) { return arr?.[Math.floor(Math.random() * arr.length)]; }
