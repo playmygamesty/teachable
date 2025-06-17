@@ -4,7 +4,6 @@
 export function replyEmoji(userMsg, state) {
   const tokens = userMsg.toLowerCase().match(/\b\w+\b/g) || [];
   const mapped = tokens.map(t => findEmoji(t, state.lexicon) || "❓");
-  // If we mapped at least one known emoji, great; otherwise shrug
   return mapped.every(e => e === "❓") ? "🤷" : mapped.join(" ");
 }
 
@@ -20,21 +19,32 @@ export function addTeachingPair(emoji, word, state) {
 }
 
 /**
- * 🔥 NEW ➜ learn implicitly from conversation.
- * If a message contains exactly 1 unknown emoji + 1 unknown word, pair them.
- * Returns {emoji, word} when it actually learns something.
+ * Advanced implicit learning:
+ * – Collect all unknown emojis in the message
+ * – Collect all unknown words (alphabetic tokens length ≥ 3)
+ * – Pair them in appearance order (one‑to‑one) and save
+ * Returns an array of {emoji, word} actually learned.
  */
 export function autoLearn(userMsg, state) {
+  const learned = [];
+
+  // Ordered lists of emojis and words in the message
   const emojiMatches = [...userMsg.matchAll(/\p{Emoji_Presentation}/gu)].map(m => m[0]);
-  if (emojiMatches.length !== 1) return null;
-  const emoji = emojiMatches[0];
-  if (state.lexicon[emoji]) return null; // already known
+  const wordMatches  = userMsg.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
 
-  const words = userMsg.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
-  // pick the first word that isn't already mapped
-  const unknownWord = words.find(w => !Object.values(state.lexicon).includes(w));
-  if (!unknownWord) return null;
+  if (!emojiMatches.length || !wordMatches.length) return learned;
 
-  state.lexicon[emoji] = unknownWord;
-  return { emoji, word: unknownWord };
+  const unknownEmojis = emojiMatches.filter(e => !state.lexicon[e]);
+  const knownWords = new Set(Object.values(state.lexicon));
+  const unknownWords = wordMatches.filter(w => !knownWords.has(w));
+
+  const count = Math.min(unknownEmojis.length, unknownWords.length);
+  for (let i = 0; i < count; i++) {
+    const emoji = unknownEmojis[i];
+    const word  = unknownWords[i];
+    state.lexicon[emoji] = word;
+    learned.push({ emoji, word });
+  }
+
+  return learned;
 }
