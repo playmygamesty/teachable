@@ -2,34 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🤖 EmojiBot</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <h1>🤖 EmojiBot</h1>
-    <button id="settingsBtn">⚙️</button>
+    <button id="settingsBtn" title="Settings">⚙️</button>
   </header>
 
   <main id="chatWindow"></main>
 
-  <form id="chatForm">
-    <input id="chatInput" placeholder="Type a message…" autocomplete="off" />
+  <form id="chatForm" autocomplete="off">
+    <input id="chatInput" placeholder="Type a message…" />
     <button type="submit">Send</button>
   </form>
 
   <dialog id="settingsDialog">
     <h2>Settings</h2>
-    <p>Bot Mode: <span id="modeDisplay"></span></p>
-    <p>Words Known: <span id="wordCount"></span></p>
-    <p>Corpus Size: <span id="corpusCount"></span></p>
-    <h3>Teach New Word</h3>
+    <p>Mode: <span id="modeDisplay"></span></p>
+    <p>Words known: <span id="wordCount"></span></p>
+    <p>Corpus size: <span id="corpusCount"></span></p>
+    <hr />
+    <h3>Teach manually</h3>
     <form id="teachForm">
       <input id="emojiInput" placeholder="Emoji" maxlength="2" />
       <input id="wordInput" placeholder="Word" />
       <button type="submit">Teach</button>
     </form>
-    <button id="resetBtn">Reset</button>
+    <hr />
+    <button id="resetBtn">Reset progress</button>
     <button onclick="settingsDialog.close()">Close</button>
   </dialog>
 
